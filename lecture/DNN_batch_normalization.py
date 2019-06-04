@@ -2,12 +2,8 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import random
 
+
 from tensorflow.examples.tutorials.mnist import input_data
-
-import timeit
-
-start = timeit.default_timer()
-# 시작 시간
 
 tf.set_random_seed(777)
 
@@ -26,21 +22,38 @@ X = tf.placeholder(tf.float32, [None, 784])
 Y = tf.placeholder(tf.float32, [None, 10])
 
 with tf.variable_scope('layer1') as scope:
-    W1 = tf.Variable(tf.random_normal([784, 256]))
-    b1 = tf.Variable(tf.random_normal([256]))
-    L1 = tf.nn.relu(tf.matmul(X, W1) + b1)
+    W1 = tf.get_variable("W", shape=[784, 512], initializer = tf.contrib.layers.xavier_initializer())
+    b1 = tf.Variable(tf.random_normal([512]))
+    L1 = tf.matmul(X, W1) + b1
+    L1 = tf.layers.batch_normalization(L1, center=True, scale=True, training=True)
+    L1 = tf.nn.relu(L1)
 
 with tf.variable_scope('layer2') as scope:
-    W2 = tf.Variable(tf.random_normal([256, 256]))
-    b2 = tf.Variable(tf.random_normal([256]))
-    L2 = tf.nn.relu(tf.matmul(L1, W2) + b2)
+    W2 = tf.get_variable("W", shape=[512, 512], initializer=tf.contrib.layers.xavier_initializer())
+    b2 = tf.Variable(tf.random_normal([512]))
+    L2 = tf.matmul(L1, W2) + b2
+    L2 = tf.layers.batch_normalization(L2, center=True, scale=True, training=True)
+    L2 = tf.nn.relu(L2)
 
 with tf.variable_scope('layer3') as scope:
-    W3 = tf.Variable(tf.random_normal([256, num_classes]))
-    b3 = tf.Variable(tf.random_normal([num_classes]))
+    W3 = tf.get_variable("W", shape=[512, 512], initializer=tf.contrib.layers.xavier_initializer())
+    b3 = tf.Variable(tf.random_normal([512]))
+    L3 = tf.matmul(L2, W3) + b3
+    L3 = tf.layers.batch_normalization(L3, center=True, scale=True, training=True)
+    L3 = tf.nn.relu(L3)
 
+with tf.variable_scope('layer4') as scope:
+    W4 = tf.get_variable("W", shape=[512, 512], initializer=tf.contrib.layers.xavier_initializer())
+    b4 = tf.Variable(tf.random_normal([512]))
+    L4 = tf.matmul(L3, W4) + b4
+    L4 = tf.layers.batch_normalization(L4, center=True, scale=True, training=True)
+    L4 = tf.nn.relu(L4)
 
-hypothesis = tf.matmul(L2, W3) + b3
+with tf.variable_scope('layer5') as scope:
+    W5 = tf.get_variable("W", shape=[512, num_classes], initializer=tf.contrib.layers.xavier_initializer())
+    b5 = tf.Variable(tf.random_normal([num_classes]))
+
+hypothesis = tf.matmul(L4, W5) + b5
 cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=hypothesis, labels=Y))
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
@@ -83,10 +96,4 @@ with tf.Session() as sess:
         sess.run(tf.argmax(hypothesis, 1), feed_dict={X: mnist.test.images[r : r + 1]}),
     )
 
-end = timeit.default_timer()
-# 종료 시간
-print(end - start)
-# 종료 시간에서 시작시간 빼기
-
-# Accuracy:  0.9442
-
+# Accuracy:  0.9792
