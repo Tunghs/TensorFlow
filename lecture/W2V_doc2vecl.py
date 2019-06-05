@@ -2,7 +2,7 @@ from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 import nltk
 from nltk.tokenize import word_tokenize
 
-#nltk.download()
+# nltk.download()
 
 data = ["나는 학교에 간다",
         "나는 친구를 만난다",
@@ -35,6 +35,7 @@ for epoch in range(max_epochs):
     model.min_alpha = model.alpha
 
 test_data = word_tokenize("나는 영화를 좋아한다".lower())
+# 이 문서와 가장 유서한것인지 유추
 
 
 similar_doc = model.docvecs.most_similar('1')
